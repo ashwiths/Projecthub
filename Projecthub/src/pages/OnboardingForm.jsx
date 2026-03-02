@@ -130,7 +130,7 @@ function CollegeAutocomplete({ value, onChange, required }) {
             }
             setIsLoading(true)
             try {
-                const baseUrl = import.meta.env.VITE_API_URL || 'https://projecthub-dnll.vercel.app';
+                const baseUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://projecthub-dnll.vercel.app';
                 const res = await fetch(`${baseUrl}/api/colleges/search?q=${encodeURIComponent(query)}`)
                 if (res.ok) {
                     const data = await res.json()
@@ -235,7 +235,7 @@ export default function OnboardingForm() {
         setErrorMsg('')
 
         try {
-            const baseUrl = import.meta.env.VITE_API_URL || 'https://projecthub-dnll.vercel.app';
+            const baseUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://projecthub-dnll.vercel.app';
             const response = await fetch(`${baseUrl}/api/projects`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

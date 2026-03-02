@@ -18,7 +18,7 @@ export default function AdminLogin() {
         setIsLoading(true)
 
         try {
-            const baseUrl = import.meta.env.VITE_API_URL || 'https://projecthub-dnll.vercel.app';
+            const baseUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://projecthub-dnll.vercel.app';
             const response = await fetch(`${baseUrl}/api/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -20,7 +20,7 @@ export default function AdminDashboard() {
 
     const fetchProjects = async () => {
         try {
-            const baseUrl = import.meta.env.VITE_API_URL || 'https://projecthub-dnll.vercel.app';
+            const baseUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://projecthub-dnll.vercel.app';
             const response = await fetch(`${baseUrl}/api/admin/projects`)
             if (response.ok) {
                 const data = await response.json()
