@@ -24,6 +24,11 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas'))
     .catch((error) => console.error('❌ MongoDB connection error:', error));
 
+// Root Health Check Route
+app.get('/', (req, res) => {
+    res.json({ message: 'ProjectHub API is running!' });
+});
+
 // Routes
 app.post('/api/projects', async (req, res) => {
     try {
@@ -132,6 +137,6 @@ app.get('/api/admin/projects', async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
