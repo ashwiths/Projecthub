@@ -132,19 +132,11 @@ app.get('/api/admin/projects', async (req, res) => {
         res.json(projects);
     } catch (error) {
         console.error('Error fetching projects:', error);
-        res.status(500).json({
-            error: 'Failed to fetch project data',
-            details: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
+        res.status(500).json({ error: 'Failed to fetch project data' });
     }
 });
 
-// Only start the server if we're not running as a Vercel serverless function
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
-    });
-}
-
-module.exports = app;
+// Start Server
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+});

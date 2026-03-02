@@ -20,8 +20,7 @@ export default function AdminDashboard() {
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch('/api/admin/projects')
-
+            const response = await fetch('https://projecthub-dnll.vercel.app/api/admin/projects')
             if (response.ok) {
                 const data = await response.json()
                 setProjects(data)
