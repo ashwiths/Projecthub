@@ -1,7 +1,5 @@
 import React from 'react';
 
-import React from 'react';
-
 export default function Footer() {
     return (
         <footer id="contact" className="relative z-10 border-t border-white/5 pt-12 pb-8 mt-auto bg-slate-950/50 backdrop-blur-md">
