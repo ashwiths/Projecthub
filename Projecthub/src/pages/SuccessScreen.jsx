@@ -113,7 +113,7 @@ export default function SuccessScreen() {
                     <p className="animate-fade-in delay-500 mt-8 text-sm text-slate-500">
                         Have questions? Reach us at{' '}
                         <a href="mailto:support@projecthub.in" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-                            support@projecthub.in
+                            bluelabtechnologies@gmail.com
                         </a>
                     </p>
                 </div>
