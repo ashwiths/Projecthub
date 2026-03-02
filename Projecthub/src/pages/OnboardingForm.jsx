@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const departments = [
@@ -97,8 +97,123 @@ function FloatingSelect({ id, label, value, onChange, options, required }) {
     )
 }
 
+function CollegeAutocomplete({ value, onChange, required }) {
+    const [query, setQuery] = useState(value)
+    const [suggestions, setSuggestions] = useState([])
+    const [isOpen, setIsOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const wrapperRef = useRef(null)
+
+    useEffect(() => {
+        // Sync outer value if it changes externally
+        setQuery(value)
+    }, [value])
+
+    useEffect(() => {
+        // Close dropdown when clicking outside
+        function handleClickOutside(event) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setIsOpen(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const fetchColleges = async () => {
+            if (query.trim().length < 2) {
+                setSuggestions([])
+                return
+            }
+            setIsLoading(true)
+            try {
+                const res = await fetch(`http://localhost:5000/api/colleges/search?q=${encodeURIComponent(query)}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    setSuggestions(data)
+                }
+            } catch (err) {
+                console.error("Failed to fetch colleges", err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        const timeoutId = setTimeout(fetchColleges, 300)
+        return () => clearTimeout(timeoutId)
+    }, [query, isOpen])
+
+    const handleSelect = (college) => {
+        setQuery(college)
+        setIsOpen(false)
+        onChange(college) // bubble up to parent form state
+    }
+
+    const handleChange = (e) => {
+        setQuery(e.target.value)
+        onChange(e.target.value)
+        setIsOpen(true)
+    }
+
+    return (
+        <div ref={wrapperRef} className="relative">
+            <div className="relative">
+                <input
+                    type="text"
+                    id="collegeName"
+                    value={query}
+                    onChange={handleChange}
+                    onFocus={() => setIsOpen(true)}
+                    required={required}
+                    placeholder=" "
+                    autoComplete="off"
+                    className="peer block w-full rounded-xl border border-white/10 bg-white/5 px-4 pt-6 pb-2 text-sm text-white placeholder-transparent focus:outline-none focus:border-indigo-500 focus:bg-white/8 hover:border-white/20 transition-all duration-200"
+                />
+                <label
+                    htmlFor="collegeName"
+                    className="absolute left-4 top-2 text-xs text-slate-500 font-medium peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:top-2 peer-focus:text-xs peer-focus:text-indigo-400 transition-all duration-200 pointer-events-none"
+                >
+                    College Name <span className="text-indigo-400">*</span>
+                </label>
+            </div>
+
+            {isOpen && (query.length >= 2 || isLoading) && (
+                <div className="absolute z-50 w-full mt-2 rounded-xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto">
+                    {isLoading ? (
+                        <div className="p-4 text-center text-sm text-slate-400 flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                            Searching colleges...
+                        </div>
+                    ) : suggestions.length > 0 ? (
+                        <ul className="py-2">
+                            {suggestions.map((college, i) => (
+                                <li
+                                    key={i}
+                                    onClick={() => handleSelect(college)}
+                                    className="px-4 py-2.5 text-sm text-slate-200 hover:bg-indigo-500/20 hover:text-white cursor-pointer transition-colors border-b border-white/5 last:border-0"
+                                >
+                                    {college}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="p-4 text-center text-sm text-slate-400">
+                            No matching colleges found. You can type it manually.
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}
+
 export default function OnboardingForm() {
     const navigate = useNavigate()
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [errorMsg, setErrorMsg] = useState('')
     const [form, setForm] = useState({
         fullName: '',
         collegeName: '',
@@ -113,9 +228,29 @@ export default function OnboardingForm() {
 
     const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        navigate('/success')
+        setIsSubmitting(true)
+        setErrorMsg('')
+
+        try {
+            const response = await fetch('http://localhost:5000/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(form)
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to submit form')
+            }
+
+            navigate('/success')
+        } catch (err) {
+            console.error(err)
+            setErrorMsg('Something went wrong. Please try again.')
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     return (
@@ -190,11 +325,9 @@ export default function OnboardingForm() {
                                     onChange={set('fullName')}
                                     required
                                 />
-                                <FloatingInput
-                                    id="collegeName"
-                                    label="College Name"
+                                <CollegeAutocomplete
                                     value={form.collegeName}
-                                    onChange={set('collegeName')}
+                                    onChange={(val) => setForm(f => ({ ...f, collegeName: val }))}
                                     required
                                 />
                                 <FloatingSelect
@@ -216,8 +349,8 @@ export default function OnboardingForm() {
                                                 key={yr}
                                                 onClick={() => setForm((f) => ({ ...f, yearOfStudy: yr }))}
                                                 className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 ${form.yearOfStudy === yr
-                                                        ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                                                        : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-white hover:bg-white/8'
+                                                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                                                    : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-white hover:bg-white/8'
                                                     }`}
                                             >
                                                 {yr}st
@@ -285,8 +418,8 @@ export default function OnboardingForm() {
                                         key={pt.id}
                                         onClick={() => setForm((f) => ({ ...f, projectType: pt.id }))}
                                         className={`text-left p-4 rounded-xl border transition-all duration-200 ${form.projectType === pt.id
-                                                ? 'border-indigo-500 bg-indigo-500/15 shadow-lg shadow-indigo-500/10'
-                                                : 'border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/6'
+                                            ? 'border-indigo-500 bg-indigo-500/15 shadow-lg shadow-indigo-500/10'
+                                            : 'border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/6'
                                             }`}
                                     >
                                         <span className="text-2xl block mb-1">{pt.icon}</span>
@@ -333,15 +466,25 @@ export default function OnboardingForm() {
                         <button
                             type="submit"
                             id="submit-form-btn"
-                            className="group w-full py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 font-semibold text-white text-base shadow-xl shadow-indigo-500/25 hover:scale-[1.02] hover:shadow-indigo-500/40 active:scale-[0.98] transition-all duration-200"
+                            disabled={isSubmitting}
+                            className={`group w-full py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 font-semibold text-white text-base shadow-xl shadow-indigo-500/25 transition-all duration-200 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:scale-[1.02] hover:shadow-indigo-500/40 active:scale-[0.98]'
+                                }`}
                         >
                             <span className="flex items-center justify-center gap-2">
-                                Submit My Project Request
-                                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
+                                {isSubmitting ? 'Submitting...' : 'Submit My Project Request'}
+                                {!isSubmitting && (
+                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                )}
                             </span>
                         </button>
+
+                        {errorMsg && (
+                            <p className="mt-4 text-center text-sm text-red-400">
+                                {errorMsg}
+                            </p>
+                        )}
 
                         <p className="mt-4 text-center text-xs text-slate-500">
                             🔒 Your information is confidential and only used by our team to contact you.
