@@ -20,7 +20,8 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://infantashil55_db_user:1234567890@projecthub.5foz5jb.mongodb.net/?appName=projecthub';
+mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas'))
     .catch((error) => console.error('❌ MongoDB connection error:', error));
 
