@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import Footer from '../components/Footer'
 
 export default function SuccessScreen() {
     const navigate = useNavigate()
@@ -109,15 +110,16 @@ export default function SuccessScreen() {
                         </button>
                     </div>
 
-                    {/* Support note */}
                     <p className="animate-fade-in delay-500 mt-8 text-sm text-slate-500">
                         Have questions? Reach us at{' '}
-                        <a href="mailto:support@projecthub.in" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+                        <a href="mailto:bluelabtechnologies@gmail.com" className="text-indigo-400 hover:text-indigo-300 transition-colors">
                             bluelabtechnologies@gmail.com
                         </a>
                     </p>
                 </div>
             </div>
+
+            <Footer />
         </div>
     )
 }

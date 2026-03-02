@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Footer from '../components/Footer'
 
 export default function AdminLogin() {
     const navigate = useNavigate()
@@ -117,9 +118,7 @@ export default function AdminLogin() {
                     </form>
                 </div>
 
-                <p className="mt-8 text-center text-xs text-slate-600">
-                    © 2024 ProjectHub. Built for administrative use only.
-                </p>
+                <Footer />
             </div>
         </div>
     )

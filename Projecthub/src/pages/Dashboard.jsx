@@ -1,3 +1,4 @@
+import Footer from '../components/Footer'
 import { useNavigate } from 'react-router-dom'
 
 const techBadges = [
@@ -57,6 +58,9 @@ export default function Dashboard() {
                     </a>
                     <a href="#domains" className="hidden md:block text-sm text-slate-400 hover:text-white transition-colors duration-200">
                         Domains
+                    </a>
+                    <a href="#contact" className="hidden md:block text-sm text-slate-400 hover:text-white transition-colors duration-200">
+                        Contact
                     </a>
                     <button
                         onClick={() => navigate('/onboarding')}
@@ -193,9 +197,7 @@ export default function Dashboard() {
             </section>
 
             {/* ---- Footer ---- */}
-            <footer className="relative z-10 border-t border-white/5 py-8 text-center text-sm text-slate-500">
-                © 2026 ProjectHub. Empowering students to build better.
-            </footer>
+            <Footer />
         </div>
     )
 }

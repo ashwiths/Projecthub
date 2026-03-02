@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Footer from '../components/Footer'
 
 const departments = [
     'Computer Science & Engineering (CSE)',
@@ -494,6 +495,8 @@ export default function OnboardingForm() {
                     </form>
                 </div>
             </div>
+
+            <Footer />
         </div>
     )
 }
